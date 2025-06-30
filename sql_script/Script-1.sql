@@ -5,8 +5,8 @@
 -- =============================================
 
 SELECT TOP 10 c.CustomerID, c.FirstName, c.LastName, SUM(od.LineTotal) AS TotalSpent
-FROM SalesLT.Customer c
-JOIN SalesLT.SalesOrderHeader oh ON c.CustomerID = oh.CustomerID
-JOIN SalesLT.SalesOrderDetail od ON oh.SalesOrderID = od.SalesOrderID
+FROM Customer c
+JOIN SalesOrderHeader oh ON c.CustomerID = oh.CustomerID
+JOIN SalesOrderDetail od ON oh.SalesOrderID = od.SalesOrderID
 GROUP BY c.CustomerID, c.FirstName, c.LastName
 ORDER BY TotalSpent DESC;
