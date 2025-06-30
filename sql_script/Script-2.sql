@@ -1,4 +1,3 @@
-
 -- =============================================
 -- Author:		AI Generated SQL Query
 -- Create date: 27/06/2025
