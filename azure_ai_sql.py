@@ -137,17 +137,17 @@ class AzureAI:
         description = generated_description
 
         header = f"""-- =============================================
-        -- Author:		{Author}
-        -- Create date: {create_date}
-        -- Description:	{description}
-        -- =============================================
+-- Author:		{Author}
+-- Create date: {create_date}
+-- Description:	{description}
+-- =============================================
         """
 
-        folder_path = script_dir / "sql_script"
+        folder_path = script_dir / "sql-script"
         latest_number = find_latest_script_number(folder_path)
         # print("Latest script number:", latest_number)
 
-        output_path = script_dir / "sql_script" / f"Script-{latest_number+1}.sql"
+        output_path = script_dir / "sql-script" / f"Script-{latest_number+1}.sql"
 
         # Make sure the directory exists, create if not
         output_path.parent.mkdir(parents=True, exist_ok=True)
