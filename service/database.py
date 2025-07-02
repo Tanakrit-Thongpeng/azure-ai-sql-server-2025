@@ -1,6 +1,5 @@
-import pyodbc
 import urllib
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 import pandas as pd
 
 import os
@@ -21,16 +20,16 @@ class DatabaseService():
         self.username = os.getenv('azure_username')
         self.password = os.getenv('azure_password')
 
-    def create_connection(self):
+    def create_connection(self, database):
 
         conn_str = (
             "Driver={ODBC Driver 17 for SQL Server};"
             f"Server={self.server};"
-            f"Database={self.database};"
+            f"Database={database};"
             f"Uid={self.username};"
             f"Pwd={self.password};"
             "Encrypt=yes;"
-            "TrustServerCertificate=no;"
+            "TrustServerCertificate=yes;"
             "Connection Timeout=30;"
         )
         
@@ -54,9 +53,9 @@ class DatabaseService():
             print(f"Error reading table {table_name}: {e}")
             return None 
 
-    def insert_data(self, df, table_name):
+    def insert_data(self, database, df, table_name):
 
-        conn_str = self.create_connection()
+        conn_str = self.create_connection(database)
 
         try:
             # Create the SQLAlchemy engine
@@ -66,17 +65,9 @@ class DatabaseService():
             with engine.connect() as conn:
                 # Start a transaction using conn.begin()
                 with conn.begin():
-                    # Get the IDs from the DataFrame
-                    ids_to_delete = df['id'].tolist()
-
-                    # Delete existing rows with matching IDs
-                    placeholders = ", ".join([str(id) for id in ids_to_delete])
-                    delete_query = f"DELETE FROM {table_name} WHERE id IN ({placeholders})"
-                    conn.execute(text(delete_query))
 
                     # Insert the DataFrame into the SQL Server table
                     df.to_sql(table_name, conn, schema=self.schema, if_exists='append', index=False)
-
 
             print("Data inserted successfully into the SQL Server table.")
             # conn = conn.close()
