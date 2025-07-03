@@ -1,5 +1,3 @@
-# Import library
-
 from openai import AzureOpenAI
 import pyodbc
 import pandas as pd
@@ -11,7 +9,9 @@ from pathlib import Path
 import re
 from datetime import datetime
 
-# Locate env path
+import sys
+sys.path.append(str(Path(__file__).resolve().parent.parent / "service"))
+from database import DatabaseService
 
 script_dir = Path(os.getcwd())
 env_path = script_dir / '.env'

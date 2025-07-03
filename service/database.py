@@ -1,4 +1,5 @@
 import urllib
+import pymssql
 from sqlalchemy import create_engine
 import pandas as pd
 
@@ -15,29 +16,43 @@ class DatabaseService():
     def __init__(self):
 
         self.server = os.getenv('azure_server')
-        self.database = os.getenv('azure_database')
+        self.database = os.getenv('azure_database').split(',')
         self.schema = os.getenv('azure_schema')
         self.username = os.getenv('azure_username')
         self.password = os.getenv('azure_password')
 
-    def create_connection(self, database):
+    def create_connection(self, database, lib=None, brand='mssql'):
 
-        conn_str = (
-            "Driver={ODBC Driver 17 for SQL Server};"
-            f"Server={self.server};"
-            f"Database={database};"
-            f"Uid={self.username};"
-            f"Pwd={self.password};"
-            "Encrypt=yes;"
-            "TrustServerCertificate=yes;"
-            "Connection Timeout=30;"
-        )
-        
-        conn = urllib.parse.quote_plus(conn_str)
+        if brand == 'mssql':
 
-        sqlalchemy_url = f"mssql+pyodbc:///?odbc_connect={conn}"
+            conn_str = (
+                "Driver={ODBC Driver 17 for SQL Server};"
+                f"Server={self.server};"
+                f"Database={database};"
+                f"Uid={self.username};"
+                f"Pwd={self.password};"
+                "Encrypt=yes;"
+                "TrustServerCertificate=yes;"
+                "Connection Timeout=30;"
+            )
+            
+            conn = urllib.parse.quote_plus(conn_str)
 
-        return sqlalchemy_url
+            if lib == 'pyodbc':
+                connection = f"mssql+pyodbc:///?odbc_connect={conn}"
+            else:
+                connection = f"mssql+pymssql://{os.getenv('azure_username')}:{os.getenv('azure_password')}@{os.getenv('azure_server')}:{os.getenv('azure_port')}/{database}"
+
+        else:
+            connection = psycopg2.connect(
+                dbname=database,
+                user=username,
+                password=password,
+                host=server,
+                port=port
+            )
+
+        return connection
     
     def read_table_to_df(self, conn, schema, table_name, query=None):
         
@@ -69,7 +84,7 @@ class DatabaseService():
                     # Insert the DataFrame into the SQL Server table
                     df.to_sql(table_name, conn, schema=self.schema, if_exists='append', index=False)
 
-            print("Data inserted successfully into the SQL Server table.")
+            print(f"Data inserted successfully into the SQL Server table: {table_name}")
             # conn = conn.close()
         except Exception as e:
             print(f"An error occurred: {e}")
