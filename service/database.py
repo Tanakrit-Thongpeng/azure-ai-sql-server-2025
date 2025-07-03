@@ -1,5 +1,5 @@
 import urllib
-import pymssql
+import psycopg2
 from sqlalchemy import create_engine
 import pandas as pd
 
@@ -20,6 +20,12 @@ class DatabaseService():
         self.schema = os.getenv('azure_schema')
         self.username = os.getenv('azure_username')
         self.password = os.getenv('azure_password')
+
+        self.doi_server = os.getenv('doi_server')
+        self.doi_port = os.getenv('doi_port')
+        self.doi_username = os.getenv('doi_username')
+        self.doi_password = os.getenv('doi_password')
+        self.doi_database = os.getenv('doi_database')
 
     def create_connection(self, database, lib=None, brand='mssql'):
 
@@ -45,11 +51,11 @@ class DatabaseService():
 
         else:
             connection = psycopg2.connect(
-                dbname=database,
-                user=username,
-                password=password,
-                host=server,
-                port=port
+                dbname=self.doi_database,
+                user=self.doi_username,
+                password=self.doi_password,
+                host=self.doi_server,
+                port=self.doi_port
             )
 
         return connection
@@ -70,7 +76,7 @@ class DatabaseService():
 
     def insert_data(self, database, df, table_name):
 
-        conn_str = self.create_connection(database)
+        conn_str = self.create_connection(database, lib=None, brand='mssql')
 
         try:
             # Create the SQLAlchemy engine
