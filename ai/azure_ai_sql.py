@@ -22,12 +22,12 @@ class AzureAI:
     def __init__(self):
 
         self.server = os.getenv('azure_server')
-        self.database = os.getenv('azure_database')
+        self.database = os.getenv('azure_database').split(',')
         self.schema = os.getenv('azure_schema')
         self.username = os.getenv('azure_username')
         self.password = os.getenv('azure_password')
 
-        self.sql_file_path = script_dir / "sql_script" / "Schema.sql"
+        self.sql_file_path = script_dir / "sql-script" / "Schema.sql"
 
         self.model_name = os.getenv("openai_model_name")
 
@@ -37,7 +37,7 @@ class AzureAI:
 
     def database_connection(self):
 
-        conn_str = f"""Driver={{ODBC Driver 17 for SQL Server}}; Server={self.server}; Database={self.database}; Uid={self.username}; Pwd={self.password}; Encrypt=yes; TrustServerCertificate=no; Connection Timeout=30;"""
+        conn_str = f"""Driver={{ODBC Driver 17 for SQL Server}}; Server={self.server}; Database={self.database[0]}; Uid={self.username}; Pwd={self.password}; Encrypt=yes; TrustServerCertificate=no; Connection Timeout=30;"""
         conn = pyodbc.connect(conn_str)
 
         return conn
@@ -50,7 +50,7 @@ class AzureAI:
         conn = self.database_connection()
 
         schema_df = pd.read_sql_query(schema_query, conn)
-        schema_df = schema_df[schema_df['TABLE_CATALOG'] == f'{self.database}']
+        schema_df = schema_df[schema_df['TABLE_CATALOG'] == f'{self.database[0]}']
         schema_df = schema_df[schema_df['TABLE_SCHEMA'] == f'{self.schema}']
 
         schema_text = ""
@@ -69,7 +69,7 @@ class AzureAI:
         )
 
         system_message = f"""
-        You are a helpful assistant that writes SQL Server queries.
+        You are a helpful assistant that writes MSSQL2025 Server queries with correct syntax for Microsoft SQL Server 2025.
         Here is the database schema:
 
         {schema_text}
